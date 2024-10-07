@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
+import axios from "axios";
 
 export function ProductList(){
 
@@ -7,22 +8,36 @@ export function ProductList(){
 
     function getProducts(){
 
-        fetch("http://localhost:4000/products?_sort=id&_order=desc")
-        .then(
-            response=> {
-                if(response.ok){
-                    return response.json()
-                }
-
-                throw new Error()
-            }
-        )
-        .then( data=> {setproducts(data)})
+        axios("http://localhost:4000/products?_sort=id&_order=desc")
+    
+        .then( response=> {setproducts(response.data)})
         .catch(error => { alert("Unable to get data") });
         
     }
 
     useEffect(getProducts,[])
+
+    function deleteProduct(id){
+
+        fetch("http://localhost:4000/products/"+id,{
+            method:"DELETE"
+
+        })
+
+        .then(response=>{
+            if(response.ok){
+                getProducts();
+            }
+            else throw new Error();
+        })
+
+        .catch(error=>
+        {
+            alert("unable to delete Product")
+        }
+        )
+
+    }
 
 
     return (
@@ -68,7 +83,7 @@ export function ProductList(){
                                         <td style={{width:"10px",whiteSpace:"nowrap"}}>
 
                                             <Link className="btn btn-primary btn-sm me-1" to={"/admin/products/edit/" + product.id }>EDIT</Link>
-                                            <button type="button" className="btn btn-danger btn-sm">Delete</button>
+                                            <button type="button" className="btn btn-danger btn-sm" onClick={()=>deleteProduct(product.id)}>Delete</button>
 
                                         </td>
 

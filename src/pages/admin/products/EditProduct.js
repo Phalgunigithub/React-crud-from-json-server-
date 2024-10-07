@@ -1,9 +1,34 @@
+import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
+import {  useEffect, useState } from "react";
 import axios from "axios";
-import { Link, Navigate, useNavigate } from "react-router-dom";
 
-export function CreateProduct(){
+export function EditProduct(){
 
-        const navigate=useNavigate()
+        const params= useParams()
+        const navigate=useNavigate();
+
+        const [initialData, setinitialData] = useState()
+
+        function getProduct(){
+            fetch("http://localhost:4000/products/"+params.id)
+            .then(response=>{
+                if(response.ok){
+                        return response.json()
+                }
+                throw new Error()
+            })
+            .then(data=> {
+                setinitialData(data)
+            })
+            .catch(error=>{
+                alert("Unable tor read data")
+            })
+            
+        }
+
+
+        useEffect(getProduct,[])
+
 
 
     async function handleSubmit(event){
@@ -21,20 +46,20 @@ export function CreateProduct(){
 
 
             try{
-                 const response=await axios.post("http://localhost:4000/products",product,{
-                    
+                 const response=await axios.patch("http://localhost:4000/products/" + params.id,product,{
+                
                     headers: {
                         "Content-Type": "application/json",
                       },
-                       });
+                          });
 
-      
+                const data=await response.json();
 
-                       if (response.status === 200 || response.status === 201) {
+                if (response.status === 200 || response.status === 204) {
                     navigate("/admin/products")
                 }
                 else if(response.status===400){alert("not found")}
-                else{alert("NOT CREATE PRODUCT")};
+                else{alert("cannot update  PRODUCT")};
              }
 
             catch(error){
@@ -51,17 +76,42 @@ export function CreateProduct(){
             <div className="row">
                 <div className="col-md-8 mx-auto rounded border p-4">
 
+                      {/*title*/}
+                    <h2 className="text-centre mb-5">EDIT PRODUCT</h2>
 
-                    <h2 className="text-centre mb-5">CREATE PRODUCT</h2>
+
+
+                    {/*id*/}
+                    <div className="row mb-3">
+
+                        <label className="col-sm-4 col-form-label">Id</label>
+
+                        <div className="col-sm-8">
+                        <input readOnly className="form-control-plaintext" defaultValue={params.id} ></input>
+                        
+                        </div>
+
+                    </div>
+
+
+
+
+                      {/*form display or not*/}
+
+                    {
+                        initialData &&
 
                     <form onSubmit={handleSubmit}>
+
+
+                   
 
                         <div className="row mb-3">
 
                             <label className="col-sm-4 col-form-label">Name</label>
                            
                            <div className="col-sm-8">
-                            <input className="form-control" name="name"></input>
+                            <input className="form-control" name="name" defaultValue={initialData.name}></input>
                             <span className="text-danger"></span>
                             </div>
 
@@ -72,7 +122,7 @@ export function CreateProduct(){
                          <div className="row mb-3">
               <label className="col-sm-4 col-form-label">Price</label>
               <div className="col-sm-8">
-                <input className="form-control" name="price" type="number"/>
+                <input className="form-control" name="price" type="number" defaultValue={initialData.price}/>
                 <span className="text-danger"></span>
               </div>
             </div>
@@ -96,6 +146,7 @@ export function CreateProduct(){
 
                         
                     </form>
+                }
 
                     
                 </div>
